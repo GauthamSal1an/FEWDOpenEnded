@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Marks</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            display: none; /* Hidden until data loads */
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Student Results</h2>
+    <button id="loadBtn">Load Student Data</button>
+
+    <table id="studentTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Marks</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+
+    <script>
+        document.getElementById('loadBtn').addEventListener('click', function() {
+            
+            // 1. Fetch the JSON file
+            fetch('students.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("HTTP error " + response.status);
+                    }
+                    // 2. Parse the response as JSON (not text)
+                    return response.json();
+                })
+                .then(data => {
+                    const tableBody = document.getElementById('tableBody');
+                    const table = document.getElementById('studentTable');
+
+                    // Clear existing data to prevent duplicates if clicked twice
+                    tableBody.innerHTML = '';
+
+                    // 3. Loop through the data array
+                    data.forEach(student => {
+                        // Create a new row
+                        const row = `
+                            <tr>
+                                <td>${student.id}</td>
+                                <td>${student.name}</td>
+                                <td><strong>${student.marks}</strong></td>
+                            </tr>
+                        `;
+                        // Append row to the table body
+                        tableBody.innerHTML += row;
+                    });
+
+                    // Show the table
+                    table.style.display = 'table';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to load student data.');
+                });
+        });
+    </script>
+</body>
+</html>
