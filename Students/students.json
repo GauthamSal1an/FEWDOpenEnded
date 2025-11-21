@@ -1,0 +1,22 @@
+[
+    {
+        "id": 1,
+        "name": "Rohan Das",
+        "marks": 85
+    },
+    {
+        "id": 2,
+        "name": "Sarah Jenkins",
+        "marks": 92
+    },
+    {
+        "id": 3,
+        "name": "Vikram Singh",
+        "marks": 74
+    },
+    {
+        "id": 4,
+        "name": "Emily Blunt",
+        "marks": 88
+    }
+]
