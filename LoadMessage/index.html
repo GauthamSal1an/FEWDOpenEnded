@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple AJAX Example</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 50px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #message-container {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px dashed #ccc;
+            background-color: #f9f9f9;
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>AJAX Demo</h2>
+    
+    <button id="loadBtn">Load Message</button>
+
+    <div id="message-container">
+        Click the button to load text here...
+    </div>
+
+    <script>
+        // 1. Select the button
+        const btn = document.getElementById('loadBtn');
+        const displayDiv = document.getElementById('message-container');
+
+        // 2. Add click event listener
+        btn.addEventListener('click', function() {
+            
+            // 3. Use the Fetch API (Modern AJAX)
+            fetch('message.txt')
+                .then(response => {
+                    // Check if the request was successful
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text(); // Convert response to text
+                })
+                .then(data => {
+                    // 4. Update the DOM with the fetched text
+                    displayDiv.innerText = data;
+                    displayDiv.style.borderColor = "green"; // Visual feedback
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                    displayDiv.innerText = "Error loading file.";
+                });
+        });
+    </script>
+</body>
+</html>
