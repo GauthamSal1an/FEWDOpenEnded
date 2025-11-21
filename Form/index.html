@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AJAX Feedback Form</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+            background-color: #f4f4f4;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 350px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Ensures padding doesn't widen element */
+        }
+        button {
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        /* The success message style */
+        #statusMessage {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: green;
+            display: none; /* Hidden by default */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2>Contact Us</h2>
+        <form id="feedbackForm">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required placeholder="Your Name">
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required placeholder="your@email.com">
+
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="4" required placeholder="Your feedback..."></textarea>
+
+            <button type="submit" id="submitBtn">Submit Feedback</button>
+        </form>
+
+        <div id="statusMessage">Feedback submitted successfully!</div>
+    </div>
+
+    <script>
+        const form = document.getElementById('feedbackForm');
+        const statusMsg = document.getElementById('statusMessage');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            // 1. Stop the page from reloading (Crucial for AJAX)
+            e.preventDefault();
+
+            // Change button text to indicate processing
+            submitBtn.innerText = "Sending...";
+            submitBtn.disabled = true;
+
+            // 2. Collect the form data
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                message: document.getElementById('message').value
+            };
+
+            // 3. Send Data using Fetch (POST method)
+            // We use jsonplaceholder to simulate a real server endpoint
+            fetch('https://jsonplaceholder.typicode.com/posts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json; charset=UTF-8',
+                },
+                body: JSON.stringify(formData) // Convert JS object to JSON string
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Network response was not ok.');
+            })
+            .then(data => {
+                // 4. On Success: Show message and reset form
+                console.log('Server response:', data); // For debugging
+                statusMsg.style.display = "block";     // Show success text
+                form.reset();                          // Clear inputs
+                
+                // Reset button state
+                submitBtn.innerText = "Submit Feedback";
+                submitBtn.disabled = false;
+
+                // Optional: Hide success message after 3 seconds
+                setTimeout(() => {
+                    statusMsg.style.display = "none";
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                statusMsg.style.color = "red";
+                statusMsg.innerText = "Failed to send. Please try again.";
+                statusMsg.style.display = "block";
+                submitBtn.innerText = "Submit Feedback";
+                submitBtn.disabled = false;
+            });
+        });
+    </script>
+
+</body>
+</html>
