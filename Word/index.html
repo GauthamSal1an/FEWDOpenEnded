@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Weather Lookup</title>
+    <style>
+        /* Simple, clean styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+        }
+
+        .weather-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 350px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            display: none; /* Hidden by default */
+        }
+
+        .temp {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 10px 0;
+        }
+
+        .meta {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="weather-card">
+        <h2>Weather Finder</h2>
+        <div class="input-group">
+            <input type="text" id="cityInput" placeholder="Enter city name..." value="New York">
+            <button id="getWeatherBtn">Search</button>
+        </div>
+        
+        <div id="errorMsg" class="error"></div>
+
+        <div id="result">
+            <h3 id="cityName">City Name</h3>
+            <div class="temp" id="temperature">--°C</div>
+            <div class="meta">Wind Speed: <span id="windSpeed">--</span> km/h</div>
+        </div>
+    </div>
+
+    <script>
+        const btn = document.getElementById('getWeatherBtn');
+        const cityInput = document.getElementById('cityInput');
+        const resultDiv = document.getElementById('result');
+        const errorDiv = document.getElementById('errorMsg');
+
+        // Elements to update
+        const cityNameEl = document.getElementById('cityName');
+        const tempEl = document.getElementById('temperature');
+        const windEl = document.getElementById('windSpeed');
+
+        btn.addEventListener('click', getWeather);
+
+        // Allow pressing "Enter" key to trigger search
+        cityInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') getWeather();
+        });
+
+        async function getWeather() {
+            const city = cityInput.value.trim();
+            if (!city) return;
+
+            // UI Updates: Disable button, hide error, hide old result
+            btn.disabled = true;
+            btn.textContent = "Loading...";
+            errorDiv.style.display = 'none';
+            resultDiv.style.display = 'none';
+
+            try {
+                // STEP 1: Geocoding - Get Lat/Lon for the city name
+                // We use the Open-Meteo Geocoding API
+                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`;
+                
+                const geoResponse = await fetch(geoUrl);
+                const geoData = await geoResponse.json();
+
+                if (!geoData.results || geoData.results.length === 0) {
+                    throw new Error("City not found. Please try again.");
+                }
+
+                const location = geoData.results[0];
+                const lat = location.latitude;
+                const lon = location.longitude;
+                const properName = `${location.name}, ${location.country}`;
+
+                // STEP 2: Weather - Get weather using Lat/Lon
+                // We use the Open-Meteo Forecast API
+                const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+                
+                const weatherResponse = await fetch(weatherUrl);
+                const weatherData = await weatherResponse.json();
+
+                // STEP 3: Update UI with data
+                cityNameEl.textContent = properName;
+                tempEl.textContent = `${weatherData.current_weather.temperature}°C`;
+                windEl.textContent = weatherData.current_weather.windspeed;
+                
+                resultDiv.style.display = 'block';
+
+            } catch (err) {
+                // Handle Errors
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                // Reset button state
+                btn.disabled = false;
+                btn.textContent = "Search";
+            }
+        }
+    </script>
+
+</body>
+</html>
