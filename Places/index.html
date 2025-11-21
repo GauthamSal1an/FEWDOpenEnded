@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Dropdowns</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 350px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: white;
+            cursor: pointer;
+        }
+        select:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+            color: #6c757d;
+        }
+        select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+        .loading {
+            font-size: 0.8em;
+            color: #007bff;
+            display: none;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Select Location</h2>
+        
+        <!-- First Dropdown: Country -->
+        <div class="form-group">
+            <label for="country">Country:</label>
+            <select id="country">
+                <option value="">-- Select Country --</option>
+                <option value="usa">United States</option>
+                <option value="india">India</option>
+                <option value="uk">United Kingdom</option>
+                <option value="canada">Canada</option>
+            </select>
+        </div>
+
+        <!-- Second Dropdown: City (Dependent) -->
+        <div class="form-group">
+            <label for="city">City:</label>
+            <select id="city" disabled>
+                <option value="">-- Select Country First --</option>
+            </select>
+            <div id="loadingMsg" class="loading">Fetching cities...</div>
+        </div>
+    </div>
+
+    <script>
+        const countrySelect = document.getElementById('country');
+        const citySelect = document.getElementById('city');
+        const loadingMsg = document.getElementById('loadingMsg');
+
+        countrySelect.addEventListener('change', function() {
+            const selectedCountry = this.value;
+
+            // Reset the city dropdown
+            citySelect.innerHTML = '<option value="">-- Select City --</option>';
+            citySelect.disabled = true;
+
+            // If no country selected, stop here
+            if (!selectedCountry) {
+                citySelect.innerHTML = '<option value="">-- Select Country First --</option>';
+                return;
+            }
+
+            // Show loading text
+            loadingMsg.style.display = 'block';
+
+            // AJAX Call to fetch the data
+            fetch('places.json')
+                .then(response => {
+                    if (!response.ok) throw new Error("Failed to load data");
+                    return response.json();
+                })
+                .then(data => {
+                    // Simulate network delay for realism (optional, remove setTimeout in production)
+                    setTimeout(() => {
+                        const cities = data[selectedCountry];
+
+                        if (cities) {
+                            // Populate the city dropdown
+                            cities.forEach(city => {
+                                const option = document.createElement('option');
+                                option.value = city;
+                                option.textContent = city;
+                                citySelect.appendChild(option);
+                            });
+                            
+                            // Enable the dropdown
+                            citySelect.disabled = false;
+                        } else {
+                            console.error("No cities found for this country");
+                        }
+
+                        // Hide loading text
+                        loadingMsg.style.display = 'none';
+                    }, 500); // 500ms delay
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingMsg.textContent = "Error loading cities.";
+                });
+        });
+    </script>
+</body>
+</html>
